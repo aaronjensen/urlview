@@ -149,10 +149,10 @@ void search_backward (char *search, int urlcount, char **url, int *redraw, int *
 }
 
 // https://codeforwin.org/2016/04/c-program-to-replace-all-occurrences-of-character-in-string.html
-void replaceall(char *str, char oldchar, char newchar)
+void replace_all (char *str, char oldchar, char newchar)
 {
     int i = 0;
-    while(str[i] != '\0')
+    while (str[i] != '\0')
     {
         if(str[i] == oldchar)
         {
@@ -163,12 +163,12 @@ void replaceall(char *str, char oldchar, char newchar)
 }
 
 // https://stackoverflow.com/a/14530993
-void urldecode2(char *dst, const char *src)
+void url_decode (char *dst, const char *src)
 {
     char a, b;
     while (*src)
     {
-        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit(a) && isxdigit(b)))
+        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit (a) && isxdigit (b)))
         {
             if (a >= 'a')
                 a -= 'a'-'A';
@@ -198,29 +198,24 @@ void urldecode2(char *dst, const char *src)
     *dst++ = '\0';
 }
 
-int rmproofpoint(char **url, int urlcount)
+int rm_proofpoint (regex_t *r, char **url, int urlcount)
 {
-    regex_t r;
+    size_t len;
     const int n_matches = 2;
     regmatch_t match[n_matches];
 
-    int status = regcomp(&r, PROOFPOINT_REGEXP, REG_EXTENDED | REG_NEWLINE);
-    if (status != 0)
-    {
-        regfree(&r);
-        return 1;
-    }
-
-    int nomatch = regexec(&r, url[urlcount], n_matches, match, 0);
+    int nomatch = regexec (r, url[urlcount], n_matches, match, 0);
     if (nomatch != 0) return nomatch;
 
-    url[urlcount] = url[urlcount] + match[1].rm_so;
-    url[urlcount][match[1].rm_eo - match[1].rm_so] = '\0';
+    len = match[1].rm_eo - match[1].rm_so;
+    memmove (url[urlcount], url[urlcount] + match[1].rm_so, len);
+    url[urlcount][len] = '\0';
+    url[urlcount] = realloc (url[urlcount], len);
 
-    replaceall(url[urlcount], '-', '%');
-    replaceall(url[urlcount], '_', '/');
+    replace_all (url[urlcount], '-', '%');
+    replace_all (url[urlcount], '_', '/');
 
-    urldecode2(url[urlcount], url[urlcount]);
+    url_decode (url[urlcount], url[urlcount]);
 
     return 0;
 }
@@ -234,6 +229,7 @@ int main (int argc, char **argv)
 #endif
     FILE *fp;
     regex_t rx;
+    regex_t rx_proofpoint;
     regmatch_t match;
     char buf[1024];
     char command[1024];
@@ -414,6 +410,14 @@ int main (int argc, char **argv)
         exit (1);
     }
 
+    if ((i = regcomp (&rx_proofpoint, PROOFPOINT_REGEXP, REG_EXTENDED | REG_NEWLINE)))
+    {
+        regerror (i, &rx_proofpoint, buf, sizeof (buf));
+        regfree (&rx_proofpoint);
+        puts (buf);
+        exit (1);
+    }
+
     /*** find matching patterns ***/
 
     if ((url = (char **) malloc (urlsize * sizeof (char *))) == NULL)
@@ -465,7 +469,8 @@ int main (int argc, char **argv)
                 }
                 url[urlcount] = malloc (len + 1);
                 memcpy (url[urlcount], buf + match.rm_so + offset, len);
-                rmproofpoint(url, urlcount);
+                url[urlcount][len] = '\0';
+                rm_proofpoint (&rx_proofpoint, url, urlcount);
                 for (urlcheck=0; urlcheck < urlcount; urlcheck++)
                 {
                     if(strcasecmp(url[urlcount],url[urlcheck])==0)
