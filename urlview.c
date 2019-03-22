@@ -148,17 +148,16 @@ void search_backward (char *search, int urlcount, char **url, int *redraw, int *
     }
 }
 
-// https://codeforwin.org/2016/04/c-program-to-replace-all-occurrences-of-character-in-string.html
-void replace_all (char *str, char oldchar, char newchar)
+void replace_all (char *str, size_t len, char find, char replace)
 {
-    int i = 0;
-    while (str[i] != '\0')
+    int i;
+
+    for (i = 0; i < len; i++)
     {
-        if(str[i] == oldchar)
+        if (str[i] == find)
         {
-            str[i] = newchar;
+            str[i] = replace;
         }
-        i++;
     }
 }
 
@@ -212,8 +211,8 @@ int rm_proofpoint (regex_t *r, char **url, int urlcount)
     url[urlcount][len] = '\0';
     url[urlcount] = realloc (url[urlcount], len);
 
-    replace_all (url[urlcount], '-', '%');
-    replace_all (url[urlcount], '_', '/');
+    replace_all (url[urlcount], len, '-', '%');
+    replace_all (url[urlcount], len, '_', '/');
 
     url_decode (url[urlcount], url[urlcount]);
 
