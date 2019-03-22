@@ -148,28 +148,28 @@ void search_backward (char *search, int urlcount, char **url, int *redraw, int *
     }
 }
 
+// https://codeforwin.org/2016/04/c-program-to-replace-all-occurrences-of-character-in-string.html
 void replaceall(char *str, char oldchar, char newchar)
 {
     int i = 0;
-
     while(str[i] != '\0')
     {
         if(str[i] == oldchar)
         {
             str[i] = newchar;
         }
-
         i++;
     }
 }
 
+// https://stackoverflow.com/a/14530993
 void urldecode2(char *dst, const char *src)
 {
     char a, b;
-    while (*src) {
-        if ((*src == '%') &&
-                ((a = src[1]) && (b = src[2])) &&
-                (isxdigit(a) && isxdigit(b))) {
+    while (*src)
+    {
+        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit(a) && isxdigit(b)))
+        {
             if (a >= 'a')
                 a -= 'a'-'A';
             if (a >= 'A')
@@ -184,10 +184,14 @@ void urldecode2(char *dst, const char *src)
                 b -= '0';
             *dst++ = 16*a+b;
             src+=3;
-        } else if (*src == '+') {
+        }
+        else if (*src == '+')
+        {
             *dst++ = ' ';
             src++;
-        } else {
+        }
+        else
+        {
             *dst++ = *src++;
         }
     }
@@ -201,7 +205,8 @@ int rmproofpoint(char **url, int urlcount)
     regmatch_t match[n_matches];
 
     int status = regcomp(&r, PROOFPOINT_REGEXP, REG_EXTENDED | REG_NEWLINE);
-    if (status != 0) {
+    if (status != 0)
+    {
         regfree(&r);
         return 1;
     }
