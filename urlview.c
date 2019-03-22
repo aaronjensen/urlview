@@ -151,7 +151,6 @@ void search_backward (char *search, int urlcount, char **url, int *redraw, int *
 void replace_all (char *str, size_t len, char find, char replace)
 {
     int i;
-
     for (i = 0; i < len; i++)
     {
         if (str[i] == find)
@@ -705,7 +704,6 @@ got_urls:
                                 snprintf (buf, sizeof (buf), part, scratch);
                             else
                                 snprintf (buf, sizeof (buf), "%s %s", part, scratch);
-                            printf ("Executing: %s...\n", buf);
                             fflush (stdout);
                             if (system (buf) == 0)
                                 break;
