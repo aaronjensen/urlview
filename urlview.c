@@ -685,16 +685,8 @@ got_urls:
                 case '\r':
                 case KEY_ENTER:
                 case ' ':
-                    strncpy (buf, url[current], sizeof (buf));
-                    buf[sizeof (buf) - 1] = 0;
-                    mvaddstr (LINES - 1, 0, "URL: ");
-                    if (mutt_enter_string ((unsigned char *)buf, sizeof (buf), LINES - 1, 5, 0) == 0 && buf[0])
                     {
                         char *part, *tmpbuf;
-
-                        free (url[current]);
-                        url[current] = strdup (buf);
-                        endwin ();
 
                         tmpbuf = strdup(command);
                         part = strtok(tmpbuf, ":");
